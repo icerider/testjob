@@ -2,7 +2,7 @@
 Модели данных
 """
 
-from sqlalchemy import Integer, String, Column, Float, ForeignKey, Enum, Datetime
+from sqlalchemy import Integer, String, Column, Float, ForeignKey, Enum, DateTime
 from sqlalchemy.orm import relationship
 import enum
 from datetime import datetime
@@ -52,7 +52,7 @@ class TransactionStatus(enum.Enum):
     # подтверждённая
     Commited = 1
     # отклонённая
-    Refused = 2
+    Rejected = 2
 
 
 class Transaction(Base):
@@ -70,8 +70,8 @@ class Transaction(Base):
         nullable=False,
         default=TransactionStatus.New
     )
-    created_at = Column(Datetime, nullable=False)
-    resolved_at = Column(Datetime)
+    created_at = Column(DateTime, nullable=False)
+    resolved_at = Column(DateTime)
 
     user = relationship(
         "User",
