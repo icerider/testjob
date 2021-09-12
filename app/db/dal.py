@@ -188,7 +188,10 @@ class TransactionDAL:
         )
 
         self.db_session.add(new_transaction)
-        await self.db_session.flush()
+        try:
+            await self.db_session.flush()
+        except IntegrityError:
+            raise DALError()
 
         return new_transaction
 
@@ -335,7 +338,10 @@ class TransactionDAL:
         """
         q = await self.db_session.execute(
             self._filter(
-                select(Transaction).options(*self.full_load_transaction()),
+                select(Transaction).options(
+                    selectinload(Transaction.user).selectinload(User.balance),
+                    selectinload(Transaction.receiver).selectinload(User.balance),
+                    *self.full_load_transaction()),
                 transaction_id=transaction_id
             )
         )
