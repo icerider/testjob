@@ -1,18 +1,16 @@
 import pytest
 from db.config import engine, Base, async_session
-from db.model import User, Transaction, Balance
-from sqlalchemy.future import select
-from sqlalchemy.orm import selectinload, joinedload, Session
-from db.dal import UserDAL, NonUniqueEmail, TransactionDAL, DAL, \
+from sqlalchemy.orm import Session
+from db.dal import UserDAL, NonUniqueEmail, DAL, \
         AttemptModifyResolved, RefundError, RefundErrorType, DataRange
-from db.model import User, TransactionResolve, TransactionStatus
+from db.model import TransactionResolve, TransactionStatus
 from contextlib import asynccontextmanager
 
 
 @pytest.fixture
 async def db():
     async with engine.begin() as conn:
-        #await conn.run_sync(Base.metadata.drop_all)
+        # await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)
     async with async_session() as session:
         async with session.begin():

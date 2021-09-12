@@ -1,6 +1,5 @@
 import typing as t
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy import update
 from sqlalchemy.future import select
 from sqlalchemy.orm import Session, joinedload, selectinload
 from sqlalchemy.orm import strategy_options
@@ -16,7 +15,7 @@ from db.model import User, Balance, Transaction, TransactionStatus, \
 @dataclass
 class DataRange:
     """
-    Интервал записей запроса 
+    Интервал записей запроса
     """
     offset: int = 0
     count: t.Optional[int] = None

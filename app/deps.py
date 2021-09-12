@@ -1,6 +1,7 @@
 from db.config import async_session
 from db.dal import DAL
 
+
 async def get_db():
     """
     Получить DAL, настроенный на новую сессию

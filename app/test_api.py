@@ -1,6 +1,6 @@
 import pytest
 from fastapi.testclient import TestClient
-from db.config import engine, Base, async_session
+from db.config import engine, Base
 
 from main import app
 client = TestClient(app)
@@ -65,6 +65,7 @@ def create_direct_transaction(user, amount):
             "amount": amount
         }
     )
+
 
 def create_transfer_transaction(user_from, user_to, amount):
     return client.post(
@@ -281,7 +282,7 @@ def test_fetch_user_transactions(prepare_db):
     user1 = create_user1().json()
     transaction1 = create_direct_transaction(user1, 10.0).json()
     transaction2 = create_direct_transaction(user1, 20.0).json()
-    transaction3 = create_direct_transaction(user1, 30.1).json()
+    create_direct_transaction(user1, 30.1).json()
     client.post(f'{transaction1["href"]}/commit')
     client.post(f'{transaction2["href"]}/reject')
     response = client.get(f'{user1["href"]}/transactions')
