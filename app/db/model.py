@@ -4,8 +4,8 @@
 
 from sqlalchemy import Integer, String, Column, Float, ForeignKey, Enum, DateTime
 from sqlalchemy.orm import relationship
+from sqlalchemy.ext.hybrid import hybrid_property
 import enum
-from datetime import datetime
 
 from db.config import Base
 
@@ -53,6 +53,8 @@ class TransactionStatus(enum.Enum):
     Commited = 1
     # отклонённая
     Rejected = 2
+    # возврат
+    Refund = 3
 
 
 class Transaction(Base):
@@ -65,24 +67,108 @@ class Transaction(Base):
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
     receiver_id = Column(Integer, ForeignKey("users.id"), nullable=True, index=True)
     amount = Column(Float, nullable=False)
-    status = Column(
-        Enum(TransactionStatus),
-        nullable=False,
-        default=TransactionStatus.New
-    )
     created_at = Column(DateTime, nullable=False)
-    resolved_at = Column(DateTime)
 
+    # решение по транзакции
+    resolve = relationship(
+        "TransactionResolve",
+        cascade="all,delete-orphan",
+        uselist=False
+    )
+
+    # содержит refund если на неё осуществляется возврат
+    refunded = relationship(
+        "TransactionRefund",
+        primaryjoin="Transaction.id == TransactionRefund.transaction_id",
+        cascade="all,delete-orphan",
+        back_populates="transaction",
+        uselist=False
+    )
+
+    # содержит refund если с помощью неё осуществляется возврат
+    refund = relationship(
+        "TransactionRefund",
+        primaryjoin="Transaction.id == TransactionRefund.linked_transaction_id",
+        cascade="all,delete-orphan",
+        back_populates="linked_transaction",
+        uselist=False
+    )
+
+    # статус транзацкии Новая (New), Подтверждённая (Commited), Отклонённная (Rejected)
+    @hybrid_property
+    def status(self):
+        if self.resolve:
+            return self.resolve.status
+        return TransactionStatus.New
+
+    # пользователь для которого осуществляется транзакция
     user = relationship(
         "User",
         foreign_keys=[user_id],
         overlaps="transactions",
         uselist=False
     )
+
+    # в случае транзакции перевода - получатель
     receiver = relationship(
         "User",
         foreign_keys=[receiver_id],
         overlaps="transactions",
+        uselist=False
+    )
+
+
+class TransactionResolve(Base):
+    """
+    Решение по транзакциям
+
+    """
+    __tablename__ = 'transactions_resolve'
+
+    # транзакция для которой принято решение
+    transaction_id = Column(
+        Integer, ForeignKey("transactions.id"),
+        nullable=False,
+        # уникальность transaction_id исключает принятие решения дважды
+        unique=True,
+        index=True,
+        primary_key=True
+    )
+    # принятое решение
+    status = Column(
+        Enum(TransactionStatus),
+        nullable=False
+    )
+    # время принятия решения
+    resolved_at = Column(DateTime)
+    transaction = relationship("Transaction", overlaps="resolve", uselist=False)
+
+
+class TransactionRefund(Base):
+    """
+    Возвраты по транзакциям
+    """
+    __tablename__ = 'transactions_refund'
+
+    transaction_id = Column(
+        Integer, ForeignKey("transactions.id"),
+        nullable=False, unique=True, index=True,
+        primary_key=True
+    )
+    linked_transaction_id = Column(
+        Integer, ForeignKey("transactions.id"),
+        nullable=False, unique=True, index=True
+    )
+    # транзакция, для которой создаётся возврат
+    transaction = relationship(
+        "Transaction",
+        foreign_keys=[transaction_id],
+        uselist=False
+    )
+    # транзакция, с помощью которой осуществляется возврат
+    linked_transaction = relationship(
+        "Transaction",
+        foreign_keys=[linked_transaction_id],
         uselist=False
     )
 
