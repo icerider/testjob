@@ -266,9 +266,9 @@ async def test_status_refund_refunded(dal: DAL):
         assert dal.db_session != other_dal.db_session
         user = await other_dal.users.get_full(user1.id)
         assert user.balance.amount == 0.0
-        print(user.transactions[0].status)
-        print(user.transactions[0].refund)
-        print(user.transactions[0].refunded)
+        assert user.transactions[0].status == TransactionStatus.Commited
+        assert user.transactions[0].refund is None
+        assert user.transactions[0].refunded is None
 
 
 @pytest.mark.asyncio
@@ -384,6 +384,20 @@ async def test_get_transactions(dal: DAL):
     assert transactions[1].id == transaction4.id
 
 
-# TODO: нужен тест, проверяющий, что можно повторно создать refund если придыдущий отклонён
+@pytest.mark.asyncio
+async def test_refund_reject_refund(dal: DAL):
+    """
+    Проверка повторного refund после reject
+    """
+    email1 = "test1@example.org"
+    user1 = await dal.users.create(email1, "secret")
+    transaction = await dal.transactions.create_refill(user1, 35.0)
+    await dal.transactions.commit(transaction)
+    refund_transaction = await dal.transactions.refund(transaction)
+    await dal.transactions.reject(refund_transaction)
+    transaction = await dal.transactions.get(transaction.id)
+    refund_transaction = await dal.transactions.refund(transaction)
+    assert refund_transaction
+
 # TODO: нужен тест, который проверит одновременный коммит транзакции
 # TODO: нужен тест, который проверит одновременный refund транзакции

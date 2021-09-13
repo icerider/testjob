@@ -258,6 +258,11 @@ class TransactionDAL:
 
         # q.execution_options(synchronize_session="fetch", isolation_level="SERIALIZABLE")
         try:
+            if transaction.refund:
+                refund = await self.get(transaction.refund.transaction_id)
+                await self.db_session.delete(transaction.refund)
+                refund.refunded = None
+                transaction.refund = None
             await self.db_session.flush()
         except IntegrityError:
             raise AttemptModifyResolved()
