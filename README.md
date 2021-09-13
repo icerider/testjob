@@ -58,3 +58,5 @@
 export SQLALCHEMY_DATABASE_URI=sqlite+aiosqlite:///work.db
 ./run.sh
 ```
+
+FASTApi Swagger UI: http://localhost:8000/docs
