@@ -1,3 +1,7 @@
+"""
+Модуль зависимостей для endpoints
+"""
+
 from db.config import async_session
 from db.dal import DAL
 

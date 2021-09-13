@@ -1,15 +1,25 @@
-import typing as t
+"""
+DAL для User и для Transaction
+"""
+
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.future import select
 from sqlalchemy.orm import Session, joinedload, selectinload
 from sqlalchemy.orm import strategy_options
 from sqlalchemy.sql import selectable, or_
 from datetime import datetime
+import typing as t
 from dataclasses import dataclass
 from enum import Enum
 
-from db.model import User, Balance, Transaction, TransactionStatus, \
-        TransactionResolve, TransactionRefund
+from db.model import (
+        User,
+        Balance,
+        Transaction,
+        TransactionStatus,
+        TransactionResolve,
+        TransactionRefund
+)
 
 
 @dataclass
@@ -252,7 +262,7 @@ class TransactionDAL:
         except IntegrityError:
             raise AttemptModifyResolved()
 
-    async def refund(self, transaction: Transaction):
+    async def refund(self, transaction: Transaction) -> Transaction:
         """
         Выполнить возврат
 
@@ -349,6 +359,9 @@ class TransactionDAL:
     async def getall(
             self, user: User, datarange: t.Optional[DataRange] = None
     ) -> t.List[Transaction]:
+        """
+        Получить транзакции пользователя с учётом интервала
+        """
         q = await self.db_session.execute(
             self._range(
                 self._filter(

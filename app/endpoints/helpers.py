@@ -1,14 +1,30 @@
+"""
+Вспомогательный модуль для преобразования данных из DAL в Scheme
+"""
 from fastapi import APIRouter
-from schemas import User, Transaction, TransactionRef, UserRef, TransactionStatus
+
 from db.dal import TransactionStatus as DALTransactionStatus
 from db import model
+from schemas import (
+        User,
+        Transaction,
+        TransactionRef,
+        UserRef,
+        TransactionStatus
+)
 
 
 class Helper:
+    """
+    Объект для выполнения преобразования данных DAL в Schema
+    """
     def __init__(self, router: APIRouter):
         self.router = router
 
     def url_path_for_user(self, user_id: int) -> str:
+        """
+        Получить url для пользователя по его id
+        """
         return self.router.url_path_for(
             'fetch_user', **{
                 "user_id": user_id
@@ -16,6 +32,9 @@ class Helper:
         )
 
     def url_path_for_transaction(self, transaction_id: int) -> str:
+        """
+        Получить url для транзакции по её id
+        """
         return self.router.url_path_for(
             'fetch_transaction', **{
                 "transaction_id": transaction_id
@@ -23,18 +42,27 @@ class Helper:
         )
 
     def get_user_ref(self, user_id: int) -> UserRef:
+        """
+        Получить объект ссылки на пользователя
+        """
         return UserRef(
             id=user_id,
             href=self.url_path_for_user(user_id)
         )
 
     def get_transaction_ref(self, transaction_id: int) -> TransactionRef:
+        """
+        Получить объект ссылки на транзакцию
+        """
         return TransactionRef(
             id=transaction_id,
             href=self.url_path_for_transaction(transaction_id)
         )
 
     def get_transaction_status(self, transaction_status: DALTransactionStatus) -> TransactionStatus:
+        """
+        Получить статус транзакции
+        """
         return {
             DALTransactionStatus.New: TransactionStatus.New,
             DALTransactionStatus.Commited: TransactionStatus.Commited,

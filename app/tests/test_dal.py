@@ -1,10 +1,22 @@
+"""
+Модуль тестирования DAL
+"""
+
 import pytest
-from db.config import engine, Base, async_session
 from sqlalchemy.orm import Session
-from db.dal import UserDAL, NonUniqueEmail, DAL, \
-        AttemptModifyResolved, RefundError, RefundErrorType, DataRange
-from db.model import TransactionResolve, TransactionStatus
 from contextlib import asynccontextmanager
+
+from db.config import engine, Base, async_session
+from db.dal import (
+        UserDAL,
+        NonUniqueEmail,
+        DAL,
+        AttemptModifyResolved,
+        RefundError,
+        RefundErrorType,
+        DataRange
+)
+from db.model import TransactionResolve, TransactionStatus
 
 
 @pytest.fixture
@@ -317,6 +329,9 @@ async def test_err_refund_transfer(dal: DAL):
 
 @pytest.mark.asyncio
 async def test_err_refund_refunded(dal: DAL):
+    """
+    Проверка ошибок при возврате на возврат или уже возвращённую транзакцию
+    """
     email1 = "test1@example.org"
     user1 = await dal.users.create(email1, "secret")
     transaction = await dal.transactions.create_refill(user1, 35.0)
@@ -336,6 +351,9 @@ async def test_err_refund_refunded(dal: DAL):
 
 @pytest.mark.asyncio
 async def test_get_transactions(dal: DAL):
+    """
+    Проверка получения транзакций пользователя
+    """
     email1 = "test1@example.org"
     user1 = await dal.users.create(email1, "secret")
     email2 = "test2@example.org"
@@ -366,5 +384,6 @@ async def test_get_transactions(dal: DAL):
     assert transactions[1].id == transaction4.id
 
 
+# TODO: нужен тест, проверяющий, что можно повторно создать refund если придыдущий отклонён
 # TODO: нужен тест, который проверит одновременный коммит транзакции
 # TODO: нужен тест, который проверит одновременный refund транзакции

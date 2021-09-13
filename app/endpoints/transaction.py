@@ -1,9 +1,24 @@
+"""
+Endpoints для управления транзакциями
+"""
+
 from fastapi import Depends, HTTPException
-from schemas import Transaction, TransactionDirectCreate, TransactionTransferCreate
-from db.dal import DAL, DALError, RefundError, RefundErrorType, AttemptModifyResolved
+import logging
+
 import deps
 from .router import router, helper
-import logging
+from schemas import (
+        Transaction,
+        TransactionDirectCreate,
+        TransactionTransferCreate
+)
+from db.dal import (
+        DAL,
+        DALError,
+        RefundError,
+        RefundErrorType,
+        AttemptModifyResolved
+)
 
 log = logging.getLogger("endpoints.transaction")
 

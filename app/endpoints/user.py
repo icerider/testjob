@@ -1,7 +1,12 @@
+"""
+Endpoints для управления пользователями
+"""
+
 from fastapi import Depends, HTTPException, Query
+from typing import List, Optional
+
 from schemas import User, UserCreate, Transaction
 from db.dal import DAL, NonUniqueEmail, DataRange
-from typing import List, Optional
 import deps
 from .router import router, helper
 
